@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TableRouteImport } from './routes/table'
 import { Route as FetchMoviesRouteImport } from './routes/fetch-movies'
+import { Route as AddEmployeeRouteImport } from './routes/add-employee'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -22,6 +23,11 @@ const TableRoute = TableRouteImport.update({
 const FetchMoviesRoute = FetchMoviesRouteImport.update({
   id: '/fetch-movies',
   path: '/fetch-movies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AddEmployeeRoute = AddEmployeeRouteImport.update({
+  id: '/add-employee',
+  path: '/add-employee',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -38,12 +44,14 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/add-employee': typeof AddEmployeeRoute
   '/fetch-movies': typeof FetchMoviesRoute
   '/table': typeof TableRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/add-employee': typeof AddEmployeeRoute
   '/fetch-movies': typeof FetchMoviesRoute
   '/table': typeof TableRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/add-employee': typeof AddEmployeeRoute
   '/fetch-movies': typeof FetchMoviesRoute
   '/table': typeof TableRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/fetch-movies' | '/table'
+  fullPaths: '/' | '/about' | '/add-employee' | '/fetch-movies' | '/table'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/fetch-movies' | '/table'
-  id: '__root__' | '/' | '/about' | '/fetch-movies' | '/table'
+  to: '/' | '/about' | '/add-employee' | '/fetch-movies' | '/table'
+  id: '__root__' | '/' | '/about' | '/add-employee' | '/fetch-movies' | '/table'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AddEmployeeRoute: typeof AddEmployeeRoute
   FetchMoviesRoute: typeof FetchMoviesRoute
   TableRoute: typeof TableRoute
 }
@@ -83,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/fetch-movies'
       fullPath: '/fetch-movies'
       preLoaderRoute: typeof FetchMoviesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/add-employee': {
+      id: '/add-employee'
+      path: '/add-employee'
+      fullPath: '/add-employee'
+      preLoaderRoute: typeof AddEmployeeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AddEmployeeRoute: AddEmployeeRoute,
   FetchMoviesRoute: FetchMoviesRoute,
   TableRoute: TableRoute,
 }
