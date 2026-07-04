@@ -1,11 +1,12 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useForm } from "@tanstack/react-form"
-import { toast } from "sonner"
-import * as z from "zod"
+import { useForm } from "@tanstack/react-form";
+import * as React from "react";
+import { toast } from "sonner";
+import * as z from "zod";
+import {format } from "date-fns"
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -13,38 +14,49 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupText,
   InputGroupTextarea,
-} from "@/components/ui/input-group"
+} from "@/components/ui/input-group";
+import { DatePicker } from "./add-employee-form-fields/DatePicker";
 
 const formSchema = z.object({
-  title: z
+  email: z.string().email("It must be valid email.").min(1, "It is required"),
+  firstName: z
     .string()
-    .min(5, "Bug title must be at least 5 characters.")
-    .max(32, "Bug title must be at most 32 characters."),
-  description: z
+    .min(3, "First name must be at least 3 characters.")
+    .max(12, "First name must be at most 12 characters."),
+  lastName: z
     .string()
-    .min(20, "Description must be at least 20 characters.")
-    .max(100, "Description must be at most 100 characters."),
-})
+    .min(3, "Last name must be at least 3 characters.")
+    .max(12, "Last name must be at most 12 characters."),
+  age: z.int(),
+  birthday: z.string().min(1, "Birthday field is required"),
+  profileImage: z.string(),
+  position: z.string().min(1, "Position field is required"),
+});
 
-export function BugReportForm() {
+export const AddEmployeeForm = () => {
   const form = useForm({
     defaultValues: {
-      title: "",
-      description: "",
+      email: "",
+      firstName: "",
+      lastName: "",
+      age: 0,
+      birthday: "",
+      profileImage: "",
+      position: "",
     },
     validators: {
       onSubmit: formSchema,
@@ -63,35 +75,34 @@ export function BugReportForm() {
         style: {
           "--border-radius": "calc(var(--radius)  + 4px)",
         } as React.CSSProperties,
-      })
+      });
     },
-  })
+  });
+
+  console.log(form.getFieldValue("birthday"))
 
   return (
-    <Card className="w-full sm:max-w-md">
+    <Card className="max-w-150 w-full mx-auto mt-14">
       <CardHeader>
-        <CardTitle>Bug Report</CardTitle>
-        <CardDescription>
-          Help us improve by reporting bugs you encounter.
-        </CardDescription>
+        <CardTitle>Add Employee</CardTitle>
       </CardHeader>
       <CardContent>
         <form
-          id="bug-report-form"
+          id="add-employee-form"
           onSubmit={(e) => {
-            e.preventDefault()
-            form.handleSubmit()
+            e.preventDefault();
+            form.handleSubmit();
           }}
         >
-          <FieldGroup>
+          <FieldGroup className="gap-3">
             <form.Field
-              name="title"
+              name="email"
               children={(field) => {
                 const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid
+                  field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Bug Title</FieldLabel>
+                  <Field className="gap-1" data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>Email</FieldLabel>
                     <Input
                       id={field.name}
                       name={field.name}
@@ -99,53 +110,114 @@ export function BugReportForm() {
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                       aria-invalid={isInvalid}
-                      placeholder="Login button not working on mobile"
+                      placeholder="example@gmail.com"
                       autoComplete="off"
                     />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}
                   </Field>
-                )
+                );
               }}
             />
-            <form.Field
-              name="description"
-              children={(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Description</FieldLabel>
-                    <InputGroup>
-                      <InputGroupTextarea
+            <div className="flex gap-4">
+              <form.Field
+                name="firstName"
+                children={(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+                  return (
+                    <Field className="gap-1" data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>First name</FieldLabel>
+                      <Input
                         id={field.name}
                         name={field.name}
                         value={field.state.value}
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
-                        placeholder="I'm having an issue with the login button on mobile."
-                        rows={6}
-                        className="min-h-24 resize-none"
                         aria-invalid={isInvalid}
+                        placeholder="Bat..."
+                        autoComplete="off"
                       />
-                      <InputGroupAddon align="block-end">
-                        <InputGroupText className="tabular-nums">
-                          {field.state.value.length}/100 characters
-                        </InputGroupText>
-                      </InputGroupAddon>
-                    </InputGroup>
-                    <FieldDescription>
-                      Include steps to reproduce, expected behavior, and what
-                      actually happened.
-                    </FieldDescription>
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                )
-              }}
-            />
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              />
+
+              <form.Field
+                name="lastName"
+                children={(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+                  return (
+                    <Field className="gap-1" data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>Last name</FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                        placeholder="Bayraa..."
+                        autoComplete="off"
+                      />
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              />
+            </div>
+
+            <div className="flex gap-4">
+              <form.Field
+                name="age"
+                children={(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+                  return (
+                    <Field className="gap-1" data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>Age</FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        // onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                        autoComplete="off"
+                      />
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              />
+
+              <form.Field
+                name="birthday"
+                children={(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+                  return (
+                    <Field className="gap-1" data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>Birthday</FieldLabel>
+                      <DatePicker date={field.state.value} setDate={field.setValue}/>
+                     
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              />
+            </div>
           </FieldGroup>
         </form>
       </CardContent>
@@ -154,11 +226,11 @@ export function BugReportForm() {
           <Button type="button" variant="outline" onClick={() => form.reset()}>
             Reset
           </Button>
-          <Button type="submit" form="bug-report-form">
+          <Button type="submit" form="add-employee-form">
             Submit
           </Button>
         </Field>
       </CardFooter>
     </Card>
-  )
-}
+  );
+};
