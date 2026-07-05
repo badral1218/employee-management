@@ -33,7 +33,7 @@ export const DatePicker = ({ date, setDate }: DatePickerType) => {
             !date && "text-muted-foreground",
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
+          <CalendarIcon className="w-4 h-4 mr-2" />
           {/* Change token from "PPP" or "MM/dd/yyyy" to "yyyy-MM-dd" */}
           {date ? format(date, "yyyy-MM-dd") : <span>Pick a date</span>}
         </Button>
@@ -44,7 +44,10 @@ export const DatePicker = ({ date, setDate }: DatePickerType) => {
           mode="single"
           selected={new Date(date)}
           onSelect={handleDatePick}
-          className="rounded-lg border"
+        
+          captionLayout="dropdown"
+        
+          className="border rounded-lg"
         />
       </PopoverContent>
     </Popover>

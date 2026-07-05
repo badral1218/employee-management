@@ -4,32 +4,26 @@ import { useForm } from "@tanstack/react-form";
 import * as React from "react";
 import { toast } from "sonner";
 import * as z from "zod";
-import {format } from "date-fns"
 
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupText,
-  InputGroupTextarea,
-} from "@/components/ui/input-group";
+
 import { DatePicker } from "./add-employee-form-fields/DatePicker";
+import { addEmployee } from "#/serverActions/employeeActions";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   email: z.string().email("It must be valid email.").min(1, "It is required"),
@@ -43,7 +37,6 @@ const formSchema = z.object({
     .max(12, "Last name must be at most 12 characters."),
   age: z.int(),
   birthday: z.string().min(1, "Birthday field is required"),
-  profileImage: z.string(),
   position: z.string().min(1, "Position field is required"),
 });
 
@@ -55,34 +48,48 @@ export const AddEmployeeForm = () => {
       lastName: "",
       age: 0,
       birthday: "",
-      profileImage: "",
       position: "",
     },
     validators: {
       onSubmit: formSchema,
     },
     onSubmit: async ({ value }) => {
-      toast("You submitted the following values:", {
-        description: (
-          <pre className="mt-2 w-[320px] overflow-x-auto rounded-md bg-code p-4 text-code-foreground">
-            <code>{JSON.stringify(value, null, 2)}</code>
-          </pre>
-        ),
-        position: "bottom-right",
-        classNames: {
-          content: "flex flex-col gap-2",
-        },
-        style: {
-          "--border-radius": "calc(var(--radius)  + 4px)",
-        } as React.CSSProperties,
-      });
+      try {
+        await addEmployee({ data: { ...value, profileImage: null } });
+
+        toast("Successfully added employee", {
+          position: "bottom-right",
+          classNames: {
+            content: "flex flex-col gap-2",
+          },
+          style: {
+            "--border-radius": "calc(var(--radius)  + 4px)",
+          } as React.CSSProperties,
+        });
+      } catch (error) {
+        toast("something went wrong", {
+          description: (
+            <p className="text-red-500">{(error as Error).message}</p>
+          ),
+          position: "bottom-right",
+          classNames: {
+            content: "flex flex-col gap-2",
+          },
+          style: {
+            "--border-radius": "calc(var(--radius)  + 4px)",
+            color: "red",
+            border: "1px solid red",
+          } as React.CSSProperties,
+        });
+      } finally {
+        form.reset();
+      }
     },
   });
 
-  console.log(form.getFieldValue("birthday"))
 
   return (
-    <Card className="max-w-150 w-full mx-auto mt-14">
+    <Card className="w-full mx-auto max-w-150 mt-14">
       <CardHeader>
         <CardTitle>Add Employee</CardTitle>
       </CardHeader>
@@ -184,11 +191,12 @@ export const AddEmployeeForm = () => {
                     <Field className="gap-1" data-invalid={isInvalid}>
                       <FieldLabel htmlFor={field.name}>Age</FieldLabel>
                       <Input
+                        type="number"
                         id={field.name}
                         name={field.name}
                         value={field.state.value}
                         onBlur={field.handleBlur}
-                        // onChange={(e) => field.handleChange(e.target.value)}
+                        onChange={(e) => field.handleChange(+e.target.value)}
                         aria-invalid={isInvalid}
                         autoComplete="off"
                       />
@@ -208,8 +216,11 @@ export const AddEmployeeForm = () => {
                   return (
                     <Field className="gap-1" data-invalid={isInvalid}>
                       <FieldLabel htmlFor={field.name}>Birthday</FieldLabel>
-                      <DatePicker date={field.state.value} setDate={field.setValue}/>
-                     
+                      <DatePicker
+                        date={field.state.value}
+                        setDate={field.setValue}
+                      />
+
                       {isInvalid && (
                         <FieldError errors={field.state.meta.errors} />
                       )}
@@ -218,6 +229,33 @@ export const AddEmployeeForm = () => {
                 }}
               />
             </div>
+            <form.Field
+              name="position"
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+                return (
+                  <Field className="gap-1" data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>Job Position</FieldLabel>
+                    <Input
+                      type="text"
+                      placeholder="JE Engineer"
+                      id={field.name}
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      aria-invalid={isInvalid}
+                      autoComplete="off"
+                    />
+
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
           </FieldGroup>
         </form>
       </CardContent>
@@ -226,9 +264,26 @@ export const AddEmployeeForm = () => {
           <Button type="button" variant="outline" onClick={() => form.reset()}>
             Reset
           </Button>
-          <Button type="submit" form="add-employee-form">
-            Submit
-          </Button>
+          <form.Subscribe
+            selector={(state) => ({
+              valid: state.isFormValid,
+              isSubmitting: state.isSubmitting,
+            })}
+          >
+            {({ valid, isSubmitting }) => (
+              <Button
+                className="flex items-center gap-2"
+                disabled={!valid || isSubmitting}
+                type="submit"
+                form="add-employee-form"
+              >
+                <span>Submit</span>
+                {form.state.isSubmitting && (
+                  <Loader2 size={20} className="animate-spin" />
+                )}
+              </Button>
+            )}
+          </form.Subscribe>
         </Field>
       </CardFooter>
     </Card>

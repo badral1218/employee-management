@@ -1,96 +1,105 @@
-import * as React from 'react'
+import * as React from "react";
 
-import './index.css'
+import "./index.css";
 
 import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   useReactTable,
-} from '@tanstack/react-table'
-import { createFileRoute } from '@tanstack/react-router'
+} from "@tanstack/react-table";
+import { createFileRoute } from "@tanstack/react-router";
+import { getEmployees } from "#/serverActions/employeeActions";
 
 type Person = {
-  firstName: string
-  lastName: string
-  age: number
-  visits: number
-  status: string
-  progress: number
-}
+  firstName: string;
+  lastName: string;
+  age: number;
+  visits: number;
+  status: string;
+  progress: number;
+};
 
 const defaultData: Person[] = [
   {
-    firstName: 'tanner',
-    lastName: 'linsley',
+    firstName: "tanner",
+    lastName: "linsley",
     age: 24,
     visits: 100,
-    status: 'In Relationship',
-    progress: 50, 
+    status: "In Relationship",
+    progress: 50,
   },
   {
-    firstName: 'tandy',
-    lastName: 'miller',
+    firstName: "tandy",
+    lastName: "miller",
     age: 40,
     visits: 40,
-    status: 'Single',
+    status: "Single",
     progress: 80,
   },
   {
-    firstName: 'joe',
-    lastName: 'dirte',
+    firstName: "joe",
+    lastName: "dirte",
     age: 45,
     visits: 20,
-    status: 'Complicated',
+    status: "Complicated",
     progress: 10,
   },
-]
+];
 
-const columnHelper = createColumnHelper<Person>()
+const columnHelper = createColumnHelper<Person>();
 
 const columns = [
-  columnHelper.accessor('firstName', {
+  columnHelper.accessor("firstName", {
     cell: (info) => info.getValue(),
     footer: (info) => info.column.id,
   }),
   columnHelper.accessor((row) => row.lastName, {
-    id: 'last Name',
+    id: "last Name",
     cell: (info) => <i>{info.getValue()}</i>,
     header: () => <span>Last Name</span>,
     footer: (info) => info.column.id,
   }),
-  columnHelper.accessor('age', {
-    header: () => 'Age',
+  columnHelper.accessor("age", {
+    header: () => "Age",
     cell: (info) => info.renderValue(),
     footer: (info) => info.column.id,
   }),
-  columnHelper.accessor('visits', {
+  columnHelper.accessor("visits", {
     header: () => <span>Visits</span>,
     footer: (info) => info.column.id,
   }),
-  columnHelper.accessor('status', {
-    header: 'Status',
+  columnHelper.accessor("status", {
+    header: "Status",
     footer: (info) => info.column.id,
   }),
-  columnHelper.accessor('progress', {
-    header: 'Profile Progress',
+  columnHelper.accessor("progress", {
+    header: "Profile Progress",
     footer: (info) => info.column.id,
   }),
-]
+];
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute("/")({
   component: App,
-})
+  loader: async () => {
+    const response = await getEmployees();
+
+    return response.data;
+  },
+});
 
 function App() {
-  const [data, _setData] = React.useState(() => [...defaultData])
-  const rerender = React.useReducer(() => ({}), {})[1]
+  const [data, _setData] = React.useState(() => [...defaultData]);
+  const rerender = React.useReducer(() => ({}), {})[1];
 
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-  })
+  });
+
+  const employeesData = Route.useLoaderData()
+
 
   return (
     <div className="p-2">
@@ -140,10 +149,12 @@ function App() {
         </tfoot>
       </table>
       <div className="h-4" />
-      <button onClick={() => rerender()} className="border p-2 hover:bg-amber-50">
+      <button
+        onClick={() => rerender()}
+        className="p-2 border hover:bg-amber-50"
+      >
         Rerender
       </button>
     </div>
-  )
+  );
 }
-
